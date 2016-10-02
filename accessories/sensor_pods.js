@@ -80,6 +80,16 @@ function WinkSensorAccessory(platform, device) {
 				callback(null, that.device.last_reading.humidity);
 			});
 
+	//Leak Detection
+	if (that.device.last_reading.liquid_detected !== undefined)
+		this
+			.addService(Service.LeakSensor)
+			.getCharacteristic(Characteristic.LeakDetected)
+			.on('get', function (callback) {
+				callback(null, that.device.last_reading.liquid_detected);
+			});
+
+
 	//Temperature Detection
 	if (that.device.last_reading.temperature !== undefined)
 		this

@@ -18,6 +18,8 @@ var WinkSensorAccessory;
 var WinkPropaneTankAccessory;
 var WinkSirenAccessory;
 var WinkShadeAccessory;
+var WinkDoorbellAccessory;
+var WinkCameraAccessory;
 
 module.exports = function (homebridge) {
 	Service = homebridge.hap.Service;
@@ -38,7 +40,10 @@ module.exports = function (homebridge) {
 	WinkPropaneTankAccessory = require('./accessories/propane_tanks')(WinkAccessory, Accessory, Service, Characteristic, uuid);
 	WinkSirenAccessory = require('./accessories/sirens')(WinkAccessory, Accessory, Service, Characteristic, uuid);
 	WinkShadeAccessory = require('./accessories/shades')(WinkAccessory, Accessory, Service, Characteristic, uuid);
-	
+	WinkDoorbellAccessory = require('./accessories/doorbells')(WinkAccessory, Accessory, Service, Characteristic, uuid);
+	WinkCameraAccessory = require('./accessories/cameras')(WinkAccessory, Accessory, Service, Characteristic, uuid);
+	WinkSecurityAccessory = require('./accessories/security')(WinkAccessory, Accessory, Service, Characteristic, uuid);
+
 	homebridge.registerPlatform("homebridge-wink", "Wink", WinkPlatform);
 };
 
@@ -83,7 +88,7 @@ WinkPlatform.prototype = {
 				for (var i = 0; i < devices.data.length; i++) {
 					var device = devices.data[i];
 					//NEWMODULE: Add the id here. I'm planning to redesign this section.
-					var accessory = that.deviceLookup[device.lock_id | device.light_bulb_id | device.binary_switch_id | device.garage_door_id | device.outlet_id | device.smoke_detector_id | device.thermostat_id | device.air_conditioner_id | device.sensor_pod_id | device.propane_tank_id | device.siren_id | ""];
+					var accessory = that.deviceLookup[device.lock_id | device.door_bell_id | device.camera_id |device.light_bulb_id | device.binary_switch_id | device.garage_door_id | device.outlet_id | device.smoke_detector_id | device.thermostat_id | device.air_conditioner_id | device.sensor_pod_id | device.propane_tank_id | device.siren_id | ""];
 					if (accessory != undefined) {
 						accessory.device = device;
 						accessory.loadData();
@@ -162,11 +167,19 @@ WinkPlatform.prototype = {
 
 						else if (device.shade_id !== undefined)
 							accessory = new WinkShadeAccessory(that, device);
+						
+						else if (device.camera_id !== undefined)
+							accessory = new WinkSecurityAccessory(that, device);
+						
+						else if (device.door_bell_id !== undefined)
+							accessory = new WinkDoorbellAccessory(that, device);
 
 						//These are here to prevent Unknown Device Groups in the logs when we know what the device is and can't represent it
 						//with a HomeKit service yet.
-						else if (device.manufacturer_device_model = "wink_hub")
+						else if (device.hub_id !== undefined)
 							that.log("Device Ignored Not In HomeKit - Group hubs, ID " + device.hub_id + ", Name " + device.name);
+						else if (device.sprinkler_id !== undefined)
+							that.log("Device Ignored Not In HomeKit - Group sprinkler, ID " + device.sprinkler_id + ", Name " + device.name);
 						else if (device.remote_id !== undefined)
 							that.log("Device Ignored Not In HomeKit - Group remotes, ID " + device.remote_id + ", Name " + device.name);
 						else if (device.unknown_device_id !== undefined)

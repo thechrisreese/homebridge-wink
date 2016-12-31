@@ -30,62 +30,120 @@ function WinkSecurityAccessory(platform, device) {
 	WinkAccessory.call(this, platform, device, device.camera_id);
 
 	var that = this;
-
-	//Items specific to Door Locks:
-	this
-		.addService(Service.SecuritySystem)
-		.getCharacteristic(Characteristic.SecuritySystemCurrentState)
-		.on('get', function (callback) {
-			switch (that.device.last_reading.mode) {
-				case "away":
-					callback(null, Characteristic.SecuritySystemCurrentState.AWAY_ARM);
-					break;
-				case "night":
-					callback(null, Characteristic.SecuritySystemCurrentState.NIGHT_ARM);
-					break;
-				case "home":
-					callback(null, Characteristic.SecuritySystemCurrentState.STAY_ARM);
-					break;
-				default:
-					callback(null, Characteristic.SecuritySystemCurrentState.DISARMED);
-					break;
+		this
+			.addService(Service.SecuritySystem)
+			.getCharacteristic(Characteristic.SecuritySystemCurrentState)
+			.on('get', function (callback) {
+				switch (that.device.last_reading.mode) {
+					case "away":
+						callback(null, Characteristic.SecuritySystemCurrentState.AWAY_ARM);
+						break;
+					case "night":
+						callback(null, Characteristic.SecuritySystemCurrentState.NIGHT_ARM);
+						break;
+					case "home":
+						callback(null, Characteristic.SecuritySystemCurrentState.STAY_ARM);
+						break;
+					default:
+						callback(null, Characteristic.SecuritySystemCurrentState.DISARMED);
+						break;
 			}
-		});
+		}
+		)
+		;
 
-	this
-		.getService(Service.SecuritySystem)
-		.getCharacteristic(Characteristic.SecuritySystemTargetState)
-		.on('get', function (callback) {
-			switch (that.device.desired_state.mode) {
-				case "away":
-					callback(null, Characteristic.SecuritySystemTargetState.AWAY_ARM);
-					break;
-				case "night":
-					callback(null, Characteristic.SecuritySystemTargetState.NIGHT_ARM);
-					break;
-				case "home":
-					callback(null, Characteristic.SecuritySystemTargetState.STAY_ARM);
-					break;
-				default:
-					callback(null, Characteristic.SecuritySystemTargetState.DISARMED);
-					break;
+
+		this
+			.getService(Service.SecuritySystem)
+			.getCharacteristic(Characteristic.SecuritySystemTargetState)
+
+// GET TARGET STATE
+
+//			.on('get', function (callback) {
+//				callback(null, that.device.desired_state.mode);
+//			})
+
+//				.on('get', function (callback) {
+//				if (that.device.desired_state.mode === "away")
+//						callback(null, Characteristic.SecuritySystemTargetState.AWAY_ARM);
+//				else if (that.device.desired_state.mode === "night")
+//						callback(null, Characteristic.SecuritySystemTargetState.NIGHT_ARM);
+//				else if (that.device.desired_state.mode === "home")
+//						callback(null, Characteristic.SecuritySystemTargetState.STAY_ARM);
+//				else
+//						callback(null, Characteristic.SecuritySystemTargetState.DISARMED);
+//			}
+//		)
+
+
+				.on('get', function (callback) {
+				switch (that.device.desired_state.mode) {
+					case "home":
+						callback(null, Characteristic.SecuritySystemTargetState.STAY_ARM);
+						break;
+					case "away":
+						callback(null, Characteristic.SecuritySystemTargetState.AWAY_ARM);
+						break;
+					case "night":
+						callback(null, Characteristic.SecuritySystemTargetState.NIGHT_ARM);
+						break;
+					default:
+						callback(null, Characteristic.SecuritySystemTargetState.DISARMED);
+						break;
 			}
-		})
-		.on('set', function (value, callback) {
+		}
+		)
+		
+
+//SET TARGET STATE
+
+
+//			.on('set', function (value, callback) {
+//				that.updateWinkProperty(callback, "mode", value);
+//			}
+//			)
+//			;
+
+//		.on('set', function (value, callback) {
+//				if (Characteristic.SecuritySystemTargetState.NIGHT_ARM)
+//					that.updateWinkProperty(callback, "mode", "night");
+//				else if (Characteristic.SecuritySystemTargetState.AWAY_ARM)
+//					that.updateWinkProperty(callback, "mode", "away");
+//				else
+//					that.updateWinkProperty(callback, "mode", "home");
+//				}
+//				)
+
+//			.on('set', function (value, callback) {
+//			switch (value) {
+//				case Characteristic.SecuritySystemTargetState.STAY_ARM:
+//					that.updateWinkProperty(callback, ["mode", "private"], ["home", false]);
+//					break;
+//				case Characteristic.SecuritySystemTargetState.AWAY_ARM:
+//					that.updateWinkProperty(callback, ["mode", "private"], ["away", false]);
+//					break;
+//				case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
+//					that.updateWinkProperty(callback, ["mode", "private"], ["night", false]);
+//					break;
+//			}
+//			}
+//			)
+
+			.on('set', function (value, callback) {
 			switch (value) {
-				case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-					that.updateWinkProperty(callback, "mode", "night");
+				case Characteristic.SecuritySystemTargetState.STAY_ARM:
+					that.updateWinkProperty(callback, "mode", "home");
 					break;
 				case Characteristic.SecuritySystemTargetState.AWAY_ARM:
 					that.updateWinkProperty(callback, "mode", "away");
 					break;
-				case Characteristic.SecuritySystemTargetState.STAY_ARM:
-					that.updateWinkProperty(callback, "mode", "home");
+				case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
+					that.updateWinkProperty(callback, "mode", "night");
 					break;
 			}
-		});
-
-
+			}
+			)
+			;
 
 	this.loadData();
 }
@@ -94,6 +152,7 @@ var loadData = function () {
 	this.getService(Service.SecuritySystem)
 		.getCharacteristic(Characteristic.SecuritySystemCurrentState)
 		.getValue();
+
 	this.getService(Service.SecuritySystem)
 		.getCharacteristic(Characteristic.SecuritySystemTargetState)
 		.getValue();

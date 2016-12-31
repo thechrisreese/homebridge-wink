@@ -41,10 +41,7 @@ function WinkThermostatAccessory(platform, device) {
 						callback(null, Characteristic.CurrentHeatingCoolingState.HEAT);
 						break;
 					case "auto": //HomeKit only accepts HEAT/COOL, so we have to determine if we are Heating or Cooling.
-						if (that.device.last_reading.temperature < that.device.last_reading.min_set_point)
-							callback(null, Characteristic.CurrentHeatingCoolingState.HEAT);
-						else
-							callback(null, Characteristic.CurrentHeatingCoolingState.COOL);
+						callback(null, Characteristic.CurrentHeatingCoolingState.AUTO);
 						break;
 					case "aux": //This assumes aux is always heat. Wink doesn't support aux with my thermostat even though I have aux mode, so I'm not 100%.
 						callback(null, Characteristic.CurrentHeatingCoolingState.HEAT);
@@ -112,16 +109,24 @@ function WinkThermostatAccessory(platform, device) {
 		.getService(Service.Thermostat)
 		.getCharacteristic(Characteristic.TargetTemperature)
 		.on('get', function (callback) {
-			if (Characteristic.CurrentHeatingCoolingState.HEAT)
-				callback(null, that.device.desired_state.max_set_point);
-			else
-				callback(null, that.desired_state.desired_state.min_set_point);
+			if (Characteristic.TargetHeatingCoolingState.AUTO)
+				callback (null);
+			else {
+				if (that.device.last_reading.heat_active)
+					callback(null, that.device.desired_state.max_set_point);
+				else
+					callback(null, that.device.desired_state.min_set_point);
+				};
 		})
 		.on('set', function (value, callback) {
-			if (Characteristic.CurrentHeatingCoolingState.HEAT)
-				that.updateWinkProperty(callback, "max_set_point", value);
-			else
-				that.updateWinkProperty(callback, "min_set_point", value);
+			if (Characteristic.TargetHeatingCoolingState.AUTO)
+				callback (null);
+			else {
+				if (that.device.last_reading.heat_active)
+					that.updateWinkProperty(callback, "max_set_point", value);
+				else
+					that.updateWinkProperty(callback, "min_set_point", value);
+			};
 		});
 
 	this
@@ -138,7 +143,7 @@ function WinkThermostatAccessory(platform, device) {
 		.getService(Service.Thermostat)
 		.getCharacteristic(Characteristic.HeatingThresholdTemperature)
 		.on('get', function (callback) {
-			callback(null, that.device.last_reading.min_set_point);
+			callback(null, that.device.desired_state.min_set_point);
 		})
 		.on('set', function (value, callback) {
 			that.updateWinkProperty(callback, "min_set_point", value);
@@ -148,11 +153,14 @@ function WinkThermostatAccessory(platform, device) {
 		.getService(Service.Thermostat)
 		.getCharacteristic(Characteristic.CoolingThresholdTemperature)
 		.on('get', function (callback) {
-			callback(null, that.device.last_reading.max_set_point);
+			callback(null, that.device.desired_state.max_set_point);
 		})
 		.on('set', function (value, callback) {
 			that.updateWinkProperty(callback, "max_set_point", value);
 		});
+
+
+
 
 	if (that.device.last_reading.humidity !== undefined)
 		this
@@ -188,6 +196,8 @@ function WinkThermostatAccessory(platform, device) {
 }
 
 var loadData = function () {
+	
+
 	this
 		.getService(Service.Thermostat)
 		.getCharacteristic(Characteristic.CurrentHeatingCoolingState)

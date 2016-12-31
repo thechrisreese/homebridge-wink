@@ -30,7 +30,7 @@ function WinkDoorbellAccessory(platform, device) {
 	// Get Current State
 	if (that.device.last_reading.button_pressed !== undefined) 
 		this
-			.getService(Service.ButtonPressed)
+			.addService(Service.Doorbell)
 			.getCharacteristic(Characteristic.ProgrammableSwitchEvent)
 			.on('get', function (callback) {
 				callback(null, that.device.last_reading.button_pressed);
@@ -38,8 +38,8 @@ function WinkDoorbellAccessory(platform, device) {
 	
 	if (that.device.last_reading.motion !== undefined) 
 		this
-			.getService(Service.Motion)
-			.getCharacteristic(Characteristic.ProgrammableSwitchEvent)
+			.addService(Service.MotionSensor)
+			.getCharacteristic(Characteristic.MotionDetected)
 			.on('get', function (callback) {
 				callback(null, that.device.last_reading.motion);
 			});
@@ -49,12 +49,12 @@ function WinkDoorbellAccessory(platform, device) {
 
 var loadData = function () {
 	if (this.device.last_reading.button_pressed !== undefined) 
-		this.getService(Service.ButtonPressed)
+		this.getService(Service.Doorbell)
 			.getCharacteristic(Characteristic.ProgrammableSwitchEvent)
 			.getValue();
 	if (this.device.last_reading.motion !== undefined) 
-		this.getService(Service.Motion)
-			.getCharacteristic(Characteristic.ProgrammableSwitchEvent)
+		this.getService(Service.MotionSensor)
+			.getCharacteristic(Characteristic.MotionDetected)
 			.getValue();
 
 	
@@ -63,22 +63,17 @@ var loadData = function () {
 
 
 //Service.Doorbell = function(displayName, subtype) {
-  //Service.call(this, displayName, '0000004A-0000-1000-8000-0026BB765291', subtype);
+  //Service.call(this, displayName, '00000121-0000-1000-8000-0026BB765291', subtype);
 
   // Required Characteristics
- // this.addCharacteristic(Characteristic.CurrentHeatingCoolingState);
- // this.addCharacteristic(Characteristic.TargetHeatingCoolingState);
-  //this.addCharacteristic(Characteristic.CurrentTemperature);
-  //this.addCharacteristic(Characteristic.TargetTemperature);
-  //this.addCharacteristic(Characteristic.TemperatureDisplayUnits);
+  //this.addCharacteristic(Characteristic.ProgrammableSwitchEvent);
 
   // Optional Characteristics
- // this.addOptionalCharacteristic(Characteristic.CurrentRelativeHumidity);
- // this.addOptionalCharacteristic(Characteristic.TargetRelativeHumidity);
- // this.addOptionalCharacteristic(Characteristic.CoolingThresholdTemperature);
- // this.addOptionalCharacteristic(Characteristic.HeatingThresholdTemperature);
- // this.addOptionalCharacteristic(Characteristic.Name);
+  //this.addOptionalCharacteristic(Characteristic.Brightness);
+  //this.addOptionalCharacteristic(Characteristic.Volume);
+  //this.addOptionalCharacteristic(Characteristic.Name);
+//};
 
 //inherits(Service.Doorbell, Service);
 
-//Service.Doorbell.UUID = '0000004A-0000-1000-8000-0026BB765291';
+//Service.Doorbell.UUID = '00000121-0000-1000-8000-0026BB765291';
